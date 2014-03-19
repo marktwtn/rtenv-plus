@@ -11,7 +11,7 @@
 #define MAX_ENVVALUE 63
 
 /* Enumeration for command types. */
-enum {
+typedef enum {
 	CMD_ECHO = 0,
 	CMD_EXPORT,
 	CMD_HELP,

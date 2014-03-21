@@ -70,6 +70,52 @@ $(OUTDIR)/%.o: %.s
 	@echo "    CC      "$@
 	@$(CROSS_COMPILE)gcc $(CFLAGS) -MMD -MF $@.d -o $@ -c $(INCLUDES) $<
 
+qemudbg: src/unit_test.c include/unit_test.h
+	$(MAKE) build/main.bin DEBUG_FLAGS=-DDEBUG
+	$(QEMU_STM32) -M stm32-p103 \
+		-gdb tcp::3333 -S \
+		-kernel build/main.bin
+
+check: src/unit_test.c include/unit_test.h
+	$(MAKE) build/main.bin DEBUG_FLAGS=-DDEBUG
+	$(QEMU_STM32) -M stm32-p103 \
+		-gdb tcp::3333 -S \
+		-serial stdio \
+		-kernel build/main.bin -monitor null >/dev/null &
+	@echo
+	$(CROSS_COMPILE)gdb -batch -x test/test-strlen.in
+	@mv -f gdb.txt $(OUTDIR)/test-strlen.txt
+	@echo
+	$(CROSS_COMPILE)gdb -batch -x test/test-strcpy.in
+	@mv -f gdb.txt $(OUTDIR)/test-strcpy.txt
+	@echo
+	$(CROSS_COMPILE)gdb -batch -x test/test-strcmp.in
+	@mv -f gdb.txt $(OUTDIR)/test-strcmp.txt
+	@echo
+	$(CROSS_COMPILE)gdb -batch -x test/test-strncmp.in
+	@mv -f gdb.txt $(OUTDIR)/test-strncmp.txt
+	@echo
+	$(CROSS_COMPILE)gdb -batch -x test/test-cmdtok.in
+	@mv -f gdb.txt $(OUTDIR)/test-cmdtok.txt
+	@echo
+	$(CROSS_COMPILE)gdb -batch -x test/test-itoa.in
+	@mv -f gdb.txt $(OUTDIR)/test-itoa.txt
+	@echo
+	$(CROSS_COMPILE)gdb -batch -x test/test-find_events.in
+	@mv -f gdb.txt $(OUTDIR)/test-find_events.txt
+	@echo
+	$(CROSS_COMPILE)gdb -batch -x test/test-find_envvar.in
+	@mv -f gdb.txt $(OUTDIR)/test-find_envvar.txt
+	@echo
+	$(CROSS_COMPILE)gdb -batch -x test/test-fill_arg.in
+	@mv -f gdb.txt $(OUTDIR)/test-fill_arg.txt
+	@echo
+	$(CROSS_COMPILE)gdb -batch -x test/test-export_envvar.in
+	@mv -f gdb.txt $(OUTDIR)/test-export_envvar.txt
+	@echo
+	@pkill -9 $(notdir $(QEMU_STM32))
+
+
 clean:
 	rm -rf $(OUTDIR)
 

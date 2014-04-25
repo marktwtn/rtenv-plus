@@ -70,6 +70,9 @@ $(OUTDIR)/%.o: %.s
 	@echo "    CC      "$@
 	@$(CROSS_COMPILE)gcc $(CFLAGS) -MMD -MF $@.d -o $@ -c $(INCLUDES) $<
 
+flash:
+	st-flash write build/main.bin 0x8000000
+
 clean:
 	rm -rf $(OUTDIR)
 
